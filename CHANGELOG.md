@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `examples/playground` CLI project to try memory + queue demos locally
 - `CONTRIBUTING.md` and `SECURITY.md`
 - Laravel Queue and Symfony Messenger integration examples in README
 - `composer test-coverage` script (pcov/xdebug)

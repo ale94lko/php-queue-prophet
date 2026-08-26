@@ -18,6 +18,16 @@ Lightweight, **zero-dependency**, framework-agnostic PHP library that predicts b
 composer require ale94lko/php-queue-prophet
 ```
 
+### Try it locally (playground)
+
+```bash
+cd examples/playground
+composer install
+composer demo
+```
+
+See [`examples/playground/README.md`](examples/playground/README.md) for memory-leak, stable-memory, and queue TTO demos.
+
 ---
 
 ## Features

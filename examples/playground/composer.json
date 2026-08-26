@@ -1,0 +1,30 @@
+{
+    "name": "ale94lko/php-queue-prophet-playground",
+    "description": "Simple playground to try php-queue-prophet locally",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": "^8.1",
+        "ale94lko/php-queue-prophet": "*@dev"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../..",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Playground\\": "src/"
+        }
+    },
+    "scripts": {
+        "demo": "php bin/demo.php",
+        "demo:memory": "php bin/demo.php memory",
+        "demo:queue": "php bin/demo.php queue",
+        "demo:stable": "php bin/demo.php stable"
+    }
+}
