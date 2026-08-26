@@ -1,0 +1,70 @@
+{
+    "name": "ale94lko/php-queue-prophet",
+    "description": "Lightweight, framework-agnostic PHP library to predict background worker memory leaks and queue overflow time before process crashes occur.",
+    "type": "library",
+    "keywords": [
+        "php",
+        "queue",
+        "memory-leak",
+        "prediction",
+        "worker",
+        "oom",
+        "linear-regression",
+        "laravel",
+        "symfony",
+        "roadrunner"
+    ],
+    "homepage": "https://github.com/ale94lko/php-queue-prophet",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fidel Alejandro Fernandez Arias",
+            "email": "47539231+ale94lko@users.noreply.github.com",
+            "homepage": "https://github.com/ale94lko",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/ale94lko/php-queue-prophet/issues",
+        "source": "https://github.com/ale94lko/php-queue-prophet"
+    },
+    "require": {
+        "php": "^8.1"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.64",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "PhpQueueProphet\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PhpQueueProphet\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "phpstan": "phpstan analyse --memory-limit=512M",
+        "cs-check": "php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "php-cs-fixer fix",
+        "check": [
+            "@cs-check",
+            "@phpstan",
+            "@test"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

@@ -1,0 +1,12 @@
+/vendor/
+/composer.lock
+/.phpunit.cache/
+/.php-cs-fixer.cache
+/.phpunit.result.cache
+/phpunit.xml.bak
+/.idea/
+/.vscode/
+/.php-conf/
+/.php-local.ini
+/*.swp
+*.phpunit.result.cache
