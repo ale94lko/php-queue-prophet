@@ -101,6 +101,107 @@ if ($tracker->getMetrics()->isAtRisk(300)) {
 
 ---
 
+## Framework integration
+
+The library has no framework bindings. Hook it where your workers already run.
+
+### Laravel Queue
+
+Record a sample after each job finishes (e.g. in your worker process or a listener):
+
+```php
+use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Support\Facades\Event;
+use PhpQueueProphet\WorkerHealthPredictor;
+
+// Typically registered once when the queue worker boots (custom worker command,
+// AppServiceProvider, or a singleton bound in the container).
+$predictor = new WorkerHealthPredictor(
+    memoryLimit: ini_get('memory_limit') ?: '128M',
+    sampleWindowSize: 20,
+);
+
+Event::listen(JobProcessed::class, function () use ($predictor): void {
+    $predictor->recordSample();
+
+    $remaining = $predictor->predictRemainingJobs();
+    if ($remaining !== null && $remaining < 50) {
+        // Ask the worker to exit after the current job so Supervisor/Octane restarts it.
+        app('queue.worker')->shouldQuit = true;
+    }
+});
+```
+
+For queue depth / TTO, feed Redis (or your driver) metrics on a schedule:
+
+```php
+use Illuminate\Support\Facades\Redis;
+use PhpQueueProphet\QueueOverflowPredictor;
+
+$tracker = new QueueOverflowPredictor(maxCapacity: 50_000);
+
+$depth = (int) Redis::llen('queues:default');
+// Derive rates from your own counters / Horizon metrics / time deltas.
+$tracker->record($depth, arrivalRate: 40.0, processingRate: 35.0);
+
+if ($tracker->getMetrics()->isAtRisk(120)) {
+    logger()->warning('Queue nearing capacity', (array) $tracker->getMetrics());
+}
+```
+
+### Symfony Messenger
+
+Use a middleware (or an event subscriber on `WorkerRunningEvent` / `WorkerMessageHandledEvent`):
+
+```php
+use PhpQueueProphet\WorkerHealthPredictor;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
+use Symfony\Component\Messenger\Middleware\StackInterface;
+use Symfony\Component\Messenger\Stamp\HandledStamp;
+
+final class ProphetMemoryMiddleware implements MiddlewareInterface
+{
+    public function __construct(
+        private readonly WorkerHealthPredictor $predictor,
+        private readonly float $stopBelowJobs = 50.0,
+    ) {}
+
+    public function handle(Envelope $envelope, StackInterface $stack): Envelope
+    {
+        $envelope = $stack->next()->handle($envelope, $stack);
+
+        if ($envelope->last(HandledStamp::class) === null) {
+            return $envelope;
+        }
+
+        $this->predictor->recordSample();
+        $remaining = $this->predictor->predictRemainingJobs();
+
+        if ($remaining !== null && $remaining < $this->stopBelowJobs) {
+            // Signal your worker loop / Messenger stop strategy to shut down gracefully.
+            throw new \Symfony\Component\Messenger\Exception\StopWorkerException(
+                'Worker approaching OOM according to php-queue-prophet'
+            );
+        }
+
+        return $envelope;
+    }
+}
+```
+
+Register the predictor as a shared service so the sliding window survives across messages in the same process:
+
+```yaml
+# config/services.yaml
+PhpQueueProphet\WorkerHealthPredictor:
+    arguments:
+        $memoryLimit: '%env(default::memory_limit:MESSENGER_MEMORY_LIMIT)%'
+        $sampleWindowSize: 20
+```
+
+---
+
 ## How it works
 
 ### Memory leak slope
@@ -143,11 +244,14 @@ Contracts live under `PhpQueueProphet\Contracts` for easy mocking and DI.
 
 ```bash
 composer install
-composer test          # PHPUnit
-composer phpstan       # Level 8
-composer cs-check      # PER Coding Style 2.0
-composer check         # all of the above
+composer test           # PHPUnit
+composer test-coverage  # PHPUnit + coverage (requires pcov or xdebug)
+composer phpstan        # Level 8
+composer cs-check       # PER Coding Style 2.0
+composer check          # cs-check + phpstan + test
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for PR guidelines and [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
 CI runs on PHP 8.1, 8.2, 8.3, and 8.4.
 

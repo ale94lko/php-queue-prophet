@@ -103,6 +103,14 @@ final class QueueOverflowPredictorTest extends TestCase
         $predictor->predictTimeToOverflowOrFail();
     }
 
+    public function testPredictOrFailReturnsValueWhenSampleExists(): void
+    {
+        $predictor = new QueueOverflowPredictor(maxCapacity: 1000);
+        $predictor->record(currentDepth: 400, arrivalRate: 50.0, processingRate: 30.0);
+
+        $this->assertEqualsWithDelta(30.0, $predictor->predictTimeToOverflowOrFail(), 1e-9);
+    }
+
     public function testResetClearsState(): void
     {
         $predictor = new QueueOverflowPredictor(maxCapacity: 100);

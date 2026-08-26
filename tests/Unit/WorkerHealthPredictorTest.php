@@ -189,4 +189,39 @@ final class WorkerHealthPredictorTest extends TestCase
         $this->assertSame(0, $report->sampleCount);
         $this->assertNull($report->estimatedRemainingJobs);
     }
+
+    public function testPredictOrFailReturnsValueWhenEnoughSamples(): void
+    {
+        $predictor = new WorkerHealthPredictor(memoryLimit: 10_000, sampleWindowSize: 5, triggerGarbageCollection: false);
+
+        foreach ([2000, 3000, 4000, 5000, 6000] as $sample) {
+            $predictor->recordSample($sample);
+        }
+
+        $this->assertEqualsWithDelta(4.0, $predictor->predictRemainingJobsOrFail(), 1e-9);
+    }
+
+    public function testRecordSampleTriggersGarbageCollectionWhenEnabled(): void
+    {
+        $predictor = new WorkerHealthPredictor(memoryLimit: '1M', sampleWindowSize: 5, triggerGarbageCollection: true);
+        $predictor->recordSample();
+
+        $this->assertSame(1, $predictor->getSampleCount());
+        $this->assertGreaterThan(0, $predictor->generateHealthReport()->currentMemoryBytes);
+    }
+
+    public function testParseBareBytesAndTerabyteUnits(): void
+    {
+        $bytes = new WorkerHealthPredictor(memoryLimit: '2048', sampleWindowSize: 5, triggerGarbageCollection: false);
+        $this->assertSame(2048, $bytes->getMemoryLimitBytes());
+
+        $withB = new WorkerHealthPredictor(memoryLimit: '4096B', sampleWindowSize: 5, triggerGarbageCollection: false);
+        $this->assertSame(4096, $withB->getMemoryLimitBytes());
+
+        $tb = new WorkerHealthPredictor(memoryLimit: '1T', sampleWindowSize: 5, triggerGarbageCollection: false);
+        $this->assertSame(1024 ** 4, $tb->getMemoryLimitBytes());
+
+        $tbAlt = new WorkerHealthPredictor(memoryLimit: '2TB', sampleWindowSize: 5, triggerGarbageCollection: false);
+        $this->assertSame(2 * (1024 ** 4), $tbAlt->getMemoryLimitBytes());
+    }
 }

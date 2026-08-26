@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `CONTRIBUTING.md` and `SECURITY.md`
+- Laravel Queue and Symfony Messenger integration examples in README
+- `composer test-coverage` script (pcov/xdebug)
+- Additional unit tests for DTO helpers and parse edge cases
+
 ## [0.1.0] - 2026-08-26
 
 ### Added
