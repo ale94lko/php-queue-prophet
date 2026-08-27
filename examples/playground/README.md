@@ -1,40 +1,40 @@
 # php-queue-prophet playground
 
-Mini proyecto para probar la librería en local sin Laravel/Symfony.
+A small local project to try the library without Laravel or Symfony.
 
-## Requisitos
+## Requirements
 
 - PHP 8.1+
 - Composer
 
-## Instalación
+## Setup
 
-Desde esta carpeta:
+From this directory:
 
 ```bash
 cd examples/playground
 composer install
 ```
 
-Composer enlaza el paquete padre (`ale94lko/php-queue-prophet`) vía `path` repository.
+Composer links the parent package (`ale94lko/php-queue-prophet`) via a path repository.
 
-## Ejecutar
+## Run
 
 ```bash
-# Las 3 demos
+# All three demos
 composer demo
 
-# Solo fuga de memoria → predicción de OOM
+# Memory leak → OOM forecast
 composer demo:memory
 
-# Memoria estable → INF (sin riesgo)
+# Stable memory → INF (no risk)
 composer demo:stable
 
-# Time-to-Overflow de cola
+# Queue Time-to-Overflow
 composer demo:queue
 ```
 
-También:
+Or directly:
 
 ```bash
 php bin/demo.php
@@ -43,19 +43,19 @@ php bin/demo.php stable
 php bin/demo.php queue
 ```
 
-## Qué verás
+## What you will see
 
-| Demo | Qué demuestra |
+| Demo | What it shows |
 |------|----------------|
-| `memory` | Worker que “fuga” ~256 KB/job; el predictor marca `STOP` antes del límite |
-| `stable` | Memoria plana → `remaining = INF` |
-| `queue` | Varios escenarios de llegada vs procesamiento y TTO |
+| `memory` | Worker “leaking” ~256 KB/job; the predictor marks `STOP` before the limit |
+| `stable` | Flat memory → `remaining = INF` |
+| `queue` | Arrival vs processing scenarios and TTO |
 
-## Experimentar
+## Experiment
 
-Edita las clases en `src/`:
+Edit the classes under `src/`:
 
-- `MemoryLeakDemo`: `$leakPerJobBytes`, `$stopBelowJobs`, límite de memoria
-- `QueueOverflowDemo`: capacidad y tasas `in` / `out`
+- `MemoryLeakDemo`: `$leakPerJobBytes`, `$stopBelowJobs`, memory limit
+- `QueueOverflowDemo`: capacity and `in` / `out` rates
 
-Luego vuelve a lanzar `composer demo`.
+Then run `composer demo` again.
